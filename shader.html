@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>web shader</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+		#fps, #tick {
+			position: absolute;
+			left: 10px;
+			top: 10px;
+			font-size: 24px;
+			color: white;
+			background-color: rgba(0, 0, 0, 0.5);
+			padding: 5px 10px;
+			border-radius: 5px;
+		}
+		#tick {
+			left: 200px;
+		}
+		canvas {
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+	<div id="fps">FPS: 0</div>
+	<div id="tick" class=fps >Tick: 0</div>
+	<div id="info" class=fps ></div>
+	<div style="height:60px;"></div>
+	<canvas id="myCanvas" width="400" height="400"></canvas>
+	<script>
+		const canvas = document.getElementById('myCanvas');
+		const ctx = canvas.getContext('2d');
+		const imageData = ctx.createImageData(canvas.width, canvas.height);
+		const pixel = imageData.data;
+
+		let lastTime = 0;
+		let frameCount = 0;
+		let tickCount = 0;
+
+		function dispFPS(timestamp) {
+			const delta = timestamp - lastTime; 
+			frameCount++;
+			if (delta >= 100) { 
+				fps0 = Math.round(frameCount*1000/delta);
+				fps.textContent = `FPS: ${fps0}`;
+				frameCount = 0;
+				lastTime = timestamp;
+			}
+			tickCount ++;
+			tick.textContent = `Tick: ${tickCount}`;
+		}
+		
+		function setPixel(x, y, r, g, b) {
+			const index = (y * imageData.width + x) * 4;
+			pixel[index] = r;
+			pixel[index + 1] = g;
+			pixel[index + 2] = b;
+			pixel[index + 3] = 255;
+		}
+		
+		//uniform vec2 u_resolution; //canvas size (width,height)
+		//uniform vec2 u_mouse; //mouse position in screen pixels 
+		//uniform float u_time; //time in seconds since load
+		function drawFrame(){
+			for (y = 0; y < canvas.height; y++) {
+				for(x=0; x < canvas.width ;x++){
+					r = x*255/400;
+					g = y*255/400;
+					b = Math.abs(Math.sin(tickCount/100)) * 255;
+					setPixel(x,y,r,g,b);
+				}
+			}
+			ctx.putImageData(imageData, 0, 0);
+		}
+
+		function draw(){
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawFrame();
+
+			ctx.fillStyle = 'blue'; 
+			ctx.fillRect(50, 50, 100, 100); 
+
+			ctx.beginPath();
+			ctx.arc(200,200, 50, 0, Math.PI * 2, true); 
+			ctx.fillStyle = 'red'; 
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.moveTo(300, 50); 
+			ctx.lineTo(350, 150);
+			ctx.strokeStyle = 'green'; 
+			ctx.lineWidth = 5; 
+			ctx.stroke();
+
+			ctx.font = '20px Arial'; 
+			ctx.fillStyle = 'black'; 
+			ctx.fillText('Hello, Canvas!', 100, 350);
+		}
+		
+		function updateFrame(timestamp) {
+			dispFPS(timestamp);
+			draw();
+
+			requestAnimationFrame(updateFrame);
+		}
+
+		updateFrame(0);
+	</script>
+</body>
+</html>
